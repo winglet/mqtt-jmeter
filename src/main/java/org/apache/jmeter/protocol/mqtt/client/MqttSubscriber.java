@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.ArrayList;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
@@ -161,19 +163,19 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		client.setCleanSession(!durable);
 		return client.futureConnection();
 	}
-	private String consume(JavaSamplerContext context) throws Exception{
+	private List<String> consume(JavaSamplerContext context) throws Exception{
 		String topics= context.getParameter("TOPIC");
 		String[] topicArray = topics.split("\\s*,\\s*");
 		int size= topicArray.length;	
 		return consume(Integer.parseInt(context.getParameter("AGGREGATE")),Long.parseLong(context.getParameter("TIMEOUT")),size);
 	}
-
-	private String  consume(int aggregate,long timeout,int size) throws Exception {
-		StringBuilder res =  new StringBuilder();
+	
+	
+	private List<String>  consume(int aggregate,long timeout,int size) throws Exception {
+		List<String> res =  new ArrayList<String>();
 		int nummsgs = 0;
 		try {
-		for(int i = 0; i <= aggregate;i++){
-			
+		for(nummsgs = 0; nummsgs < aggregate; nummsgs++){
 			for(int j=0;j<size;j++){
 				
 				Message msg = this.connectionArray[j].receive().await(timeout, TimeUnit.MILLISECONDS);
@@ -183,10 +185,8 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 				} 
 				msg.ack();
 				System.out.println("Got new msg: " + new String(msg.getPayload()));
-				getLogger().debug(j+" "+"consumed "+ i);
-				res.append( ((nummsgs==0) ? "" : "\n") + new String(msg.getPayload()));
-				System.out.println( "Current msg buffer: " + res.toString() );
-				nummsgs++;
+				getLogger().debug(j+" "+"consumed "+ nummsgs);
+				res.add(new String(msg.getPayload()));
 				}
 		}
 		} catch (java.util.concurrent.TimeoutException e) {
@@ -196,8 +196,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 			throw e;
 		}
 		finally {
-			res.append("\n Total Messages received: " + nummsgs);
-			return res.toString();
+			return res;
 		}
 		
 	}
@@ -208,16 +207,24 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		try {
 
 			result.sampleStart(); // start stopwatch
-			String res = consume(context);
+			List<String> res = consume(context);
 			result.sampleEnd(); // stop stopwatch
 			result.setSuccessful( true );
-			if (res!=null) {
-				result.setResponseMessage("Received " + context.getParameter("AGGREGATE") + " messages: " + res);
-				result.setResponseData(res,null);
+			StringBuilder allmsgs = new StringBuilder();
+			if ( !res.isEmpty() ) {
+				for (String s : res)
+				{
+				  allmsgs.append(s + "\n");
+				}
+				result.setResponseMessage("Received " + res.size() + " messages: \n" + allmsgs.toString() );
+				result.setResponseData(allmsgs.toString(),null);
 			} else {
-				result.setResponseMessage("Hmm - no messages");
+				result.setResponseMessage("No messages received");
 			}
-			result.setResponseCode("OK");
+			if (Integer.parseInt(context.getParameter("AGGREGATE")) == res.size() )
+			  result.setResponseCode("OK");
+			else
+			  result.setResponseCode("FAILED");
 		} catch (Exception e) {
 			result.sampleEnd(); // stop stopwatch
 			result.setSuccessful(false);
