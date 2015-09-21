@@ -242,7 +242,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	}
 
 
-	public void close() {
+	public void close(JavaSamplerContext context) {
 		if(this.connectionArray!=null){
 			for(int p=0;p<this.connectionArray.length;p++){			
 				if (this.connectionArray[p] != null)
