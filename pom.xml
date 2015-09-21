@@ -56,6 +56,11 @@
 			<artifactId>mqtt-client</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>io.inventit.dev</groupId>
+			<artifactId>mqtt-websocket-java</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -27,6 +27,9 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
@@ -34,15 +37,23 @@ import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.threads.JMeterContext;
 import org.apache.jmeter.threads.JMeterContextService;
-import org.fusesource.mqtt.client.FutureConnection;
-import org.fusesource.mqtt.client.MQTT;
-import org.fusesource.mqtt.client.Message;
-import org.fusesource.mqtt.client.QoS;
-import org.fusesource.mqtt.client.Topic;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable {
+import io.inventit.dev.mqtt.paho.MqttWebSocketAsyncClient;
+
+public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable, MqttCallback {
 	private static final long serialVersionUID = 1L;
-	private FutureConnection[] connectionArray;
+	private MqttWebSocketAsyncClient client;
+	//private MqttClient client;
+	
 
 
 	@Override
@@ -57,200 +68,130 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	}
 
 	public void setupTest(JavaSamplerContext context){
+		System.out.println("mpika setupTestttttt");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
-		clientId= MqttPublisher.getClientId(clientId,Integer.parseInt(context.getParameter("SUFFIX_LENGTH")));	
+			clientId= MqttPublisher.getClientId(clientId,Integer.parseInt(context.getParameter("SUFFIX_LENGTH")));	
 		}
-		if("FALSE".equals(context.getParameter("PER_TOPIC"))){
-			String topic= context.getParameter("TOPIC");
-			if("TRUE".equals(context.getParameter("AUTH"))){			
-				setupTest(host,clientId,topic,context.getParameter("USER"),context.getParameter("PASSWORD"),1,Boolean.parseBoolean(context.getParameter("DURABLE")),context.getParameter("QOS"));		
-				}
-				else{	setupTest(host, clientId,topic,1,Boolean.parseBoolean(context.getParameter("DURABLE")),context.getParameter("QOS"));}		
-		}
-		else if("TRUE".equals(context.getParameter("PER_TOPIC"))){
-			String topics= context.getParameter("TOPIC");
-			String[] topicArray = topics.split("\\s*,\\s*");
-			int size= topicArray.length;		
-			if("TRUE".equals(context.getParameter("AUTH"))){			
-				setupTest(host,clientId,topics,context.getParameter("USER"),context.getParameter("PASSWORD"),size,Boolean.parseBoolean(context.getParameter("DURABLE")),context.getParameter("QOS"));		
-				}
-				else {	setupTest(host, clientId,topics,size,Boolean.parseBoolean(context.getParameter("DURABLE")),context.getParameter("QOS"));
-				}
-		    }
-		}
-	private void setupTest(String host,String clientId, String topic, String user,String password,int size, boolean durable,String quality){
 		try {
-
-			// Quality
-			QoS qos=null;
-			if (MQTTSubscriberGui.EXACTLY_ONCE.equals(quality)) {
-				qos = QoS.EXACTLY_ONCE;
-			} else if (MQTTSubscriberGui.AT_LEAST_ONCE.equals(quality)) {
-				qos = QoS.AT_LEAST_ONCE;
-			} else if (MQTTSubscriberGui.AT_MOST_ONCE.equals(quality)) {
-				qos = QoS.AT_MOST_ONCE;
-			}
-			this.connectionArray= new FutureConnection[size];
-			JMeterContext jmcx = JMeterContextService.getContext();
-			if(size==1){
-				this.connectionArray[0]=createConnection(host,clientId+jmcx.getThreadNum(), durable,user,password);
-				this.connectionArray[0].connect().await();
-				this.connectionArray[0].subscribe(new Topic[]{new Topic(topic, qos)}).await();
-						}
-			else if(size>1){				
-				String[] topicArray = topic.split("\\s*,\\s*");
-			for(int j=0;j<size;j++){
-				this.connectionArray[j]=createConnection(host,clientId+jmcx.getThreadNum()+j, durable,user,password);
-				this.connectionArray[j].connect().await();
-				this.connectionArray[j].subscribe(new Topic[]{new Topic(topicArray[j],qos)}).await();					
-			}
-			}
-		} catch (Exception e) {
-			getLogger().error(e.getMessage());
-		}
-	}
-	private void setupTest(String host, String clientId, String topic,int size, boolean durable,String quality){
-		try {
-			// Quality
-			QoS qos=null;
-			if (MQTTSubscriberGui.EXACTLY_ONCE.equals(quality)) {
-				qos = QoS.EXACTLY_ONCE;
-			} else if (MQTTSubscriberGui.AT_LEAST_ONCE.equals(quality)) {
-				qos = QoS.AT_LEAST_ONCE;
-			} else if (MQTTSubscriberGui.AT_MOST_ONCE.equals(quality)) {
-				qos = QoS.AT_MOST_ONCE;
-
-			}						
-			this.connectionArray= new FutureConnection[size];
-			JMeterContext jmcx = JMeterContextService.getContext();
-			if(size==1){
-				this.connectionArray[0]=createConnection(host, clientId+jmcx.getThreadNum(), durable);
-				this.connectionArray[0].connect().await();
-				this.connectionArray[0].subscribe(new Topic[]{new Topic(topic,qos)}).await();	
-			}
-			else if(size>1){
-				String[] topicArray = topic.split("\\s*,\\s*");
-				for(int j=0;j<size;j++){
-				this.connectionArray[j]=createConnection(host, clientId+jmcx.getThreadNum()+j, durable);
-				this.connectionArray[j].connect().await();
-				this.connectionArray[j].subscribe(new Topic[]{new Topic(topicArray[j],qos)}).await();
-				}
-			}
-		} catch (Exception e) {
-			getLogger().error(e.getMessage());
-		}
-	}
-
-	private FutureConnection createConnection(String host, String clientId, boolean durable)
-			throws URISyntaxException{
-
-		MQTT client = new MQTT();
-		client.setHost(host);
-		client.setClientId(clientId);
-		client.setCleanSession(!durable);
-		return client.futureConnection();
-
-	}
-	private FutureConnection createConnection(String host, String clientId, boolean durable,String user,String password) throws URISyntaxException
-	{
-		MQTT client = new MQTT();
-		client.setHost(host);
-		client.setClientId(clientId);
-		client.setUserName(user);
-		client.setPassword(password);
-		client.setCleanSession(!durable);
-		return client.futureConnection();
-	}
-	private List<String> consume(JavaSamplerContext context) throws Exception{
-		String topics= context.getParameter("TOPIC");
-		String[] topicArray = topics.split("\\s*,\\s*");
-		int size= topicArray.length;	
-		return consume(Integer.parseInt(context.getParameter("AGGREGATE")),Long.parseLong(context.getParameter("TIMEOUT")),size);
-	}
-	
-	
-	private List<String>  consume(int aggregate,long timeout,int size) throws Exception {
-		List<String> res =  new ArrayList<String>();
-		int nummsgs = 0;
-		try {
-		for(nummsgs = 0; nummsgs < aggregate; nummsgs++){
-			for(int j=0;j<size;j++){
-				
-				Message msg = this.connectionArray[j].receive().await(timeout, TimeUnit.MILLISECONDS);
-				if(msg == null){
-					getLogger().error("MQTT consumer timed out while waiting for a message. The test has been aborted.");
-					return null;
-				} 
-				msg.ack();
-				System.out.println("Got new msg: " + new String(msg.getPayload()));
-				getLogger().debug(j+" "+"consumed "+ nummsgs);
-				res.add(new String(msg.getPayload()));
-				}
-		}
-		} catch (java.util.concurrent.TimeoutException e) {
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			e.printStackTrace( new java.io.PrintWriter(stringWriter) );
-		} catch (Exception e) {
-			throw e;
-		}
-		finally {
-			return res;
+			System.out.println("Host: " + host + "clientID: " + clientId);
+			client = new MqttWebSocketAsyncClient(host, clientId, new MemoryPersistence());
+			//client = new MqttClient(host, clientId, new MemoryPersistence());
+		} catch (MqttException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
+		MqttConnectOptions options = new MqttConnectOptions();
+		options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
+		options.setCleanSession(true);
+		/*String user = context.getParameter("USER"); 
+		String pwd = context.getParameter("PASSWORD");
+		boolean durable = Boolean.parseBoolean(context.getParameter("DURABLE"));
+		options.setCleanSession(!durable);
+		if (user != null) {
+			options.setUserName(user);
+			if ( pwd!=null ) {
+				options.setPassword(pwd.toCharArray());
+			}
+		}
+		*/
+		//TODO more options here
+		try {
+			client.connect(options);
+			int i=0;
+			if (!client.isConnected() && (i<5) ) {
+				try {
+					i++;
+					Thread.sleep(2000);
+					System.out.println(".");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		} catch (MqttSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		client.setCallback(this);
+		/*new MqttCallback() {
+
+		    @Override
+		    public void messageArrived(String topic, MqttMessage message)
+		            throws Exception {
+		    	System.out.println("hohohohohohohohohohoh");
+		    }
+
+		    @Override
+		    public void deliveryComplete(IMqttDeliveryToken token) {
+		    }
+
+		    @Override
+		    public void connectionLost(Throwable cause) {
+		    }
+		  });
+		  */
 	}
 
+	
+	private class EndTask extends TimerTask  {
+		boolean timeup = false;
+	    public void run()  {
+	      System.out.println("Time's up!");
+	      timeup = true;
+	      }
+	    public boolean isTimeUp(){
+	    	return timeup;
+	    }
+	 }
+
 	public SampleResult runTest(JavaSamplerContext context) {
+		
 		SampleResult result = new SampleResult();
-
-		try {
-
-			result.sampleStart(); // start stopwatch
-			List<String> res = consume(context);
-			result.sampleEnd(); // stop stopwatch
-			result.setSuccessful( true );
-			StringBuilder allmsgs = new StringBuilder();
-			if ( !res.isEmpty() ) {
-				for (String s : res)
-				{
-				  allmsgs.append(s + "\n");
-				}
-				result.setResponseMessage("Received " + res.size() + " messages: \n" + allmsgs.toString() );
-				result.setResponseData(allmsgs.toString(),null);
-			} else {
-				result.setResponseMessage("No messages received");
-			}
-			if (Integer.parseInt(context.getParameter("AGGREGATE")) == res.size() )
-			  result.setResponseCode("OK");
-			else
-			  result.setResponseCode("FAILED");
-		} catch (Exception e) {
-			result.sampleEnd(); // stop stopwatch
+		
+		if (!client.isConnected() ) {
 			result.setSuccessful(false);
-			result.setResponseMessage("Exception: " + e);
-
-			// get stack trace as a String to return as document data
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			e.printStackTrace( new java.io.PrintWriter(stringWriter) );
-			result.setResponseData(stringWriter.toString(), null);
-			result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
-			result.setResponseCode("FAILED");
+			return result;
 		}
-
+		result.sampleStart(); // start stopwatch
+		try {
+			client.subscribe(context.getParameter("TOPIC"), 0);
+		} catch (MqttException e) {
+			System.out.println("ohohohoh");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		EndTask endtask = new EndTask();
+		Timer timer = new Timer();
+		System.out.println("Waiting for: " + Long.parseLong(context.getParameter("TIMEOUT")));
+		timer.schedule( endtask, Long.parseLong(context.getParameter("TIMEOUT")));
+		//wait out for messages till TIMEOUT expires
+		while ( !endtask.isTimeUp() ) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		};
+		
+		result.sampleEnd(); 
+		System.out.println("ending runTest");
 		return result;
+	
 	}
 
 
 	public void close(JavaSamplerContext context) {
-		if(this.connectionArray!=null){
-			for(int p=0;p<this.connectionArray.length;p++){			
-				if (this.connectionArray[p] != null)
-					this.connectionArray[p].disconnect();
-				   	this.connectionArray[p]=null;
-														  }		
-		                                                  }			
-			this.connectionArray= null;
+		System.out.println("mpika close");
+		
 	}
 	
 	private static final String mycharset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -263,5 +204,24 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	        sb.append(mycharset.charAt(pos));
 	    }
 	    return sb.toString();
+	}
+
+	@Override
+	public void connectionLost(Throwable arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deliveryComplete(IMqttDeliveryToken arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void messageArrived(String str, MqttMessage msg) throws Exception {
+		System.out.println("got message: " + new String(msg.getPayload()));
+		// TODO Auto-generated method stub
+		
 	}
 }
