@@ -26,7 +26,7 @@ import java.util.Date;
 
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.client.ListenerforSubscribe;
+//import org.apache.jmeter.protocol.mqtt.client.ListenerforSubscribe;
 import org.apache.jmeter.protocol.mqtt.client.MqttSubscriber;
 import org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui;
 import org.apache.jmeter.samplers.Interruptible;
@@ -157,7 +157,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 	public boolean interrupt() {
 		
 		System.out.println("Hello interrupt");
-		System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
+		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
 		log.debug("Thread ended " + new Date());
 		if (this.subscriber != null) {
 			try {
@@ -176,7 +176,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 	public void testEnded() {
 		System.out.println("Hello testended");
 		log.debug("Thread ended " + new Date());
-		System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
+		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
 		if (this.subscriber != null) {
 			try {
 				this.subscriber.close(context);
@@ -279,7 +279,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 	public void threadFinished() {
 
 		log.debug("Thread ended " + new Date());
-		System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
+		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
 		if (this.subscriber != null) {
 			try {
 				this.subscriber.close(context);

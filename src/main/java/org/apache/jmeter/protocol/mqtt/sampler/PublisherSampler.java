@@ -425,15 +425,7 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 				
 		if (producer != null) {
 
-			try {
-				producer.close();
-				MqttPublisher.numSeq = 0;
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				log.warn(e.getLocalizedMessage(), e);
-			}
-
+			
 		}
 
 	}
@@ -453,15 +445,7 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 		
 		if (producer != null) {
 
-			try {
-				producer.close();
-				System.out.println("close at:"+ new Date());
-				MqttPublisher.numSeq = 0;
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				log.warn(e.getLocalizedMessage(), e);
-			}
+			
 
 		}
 
