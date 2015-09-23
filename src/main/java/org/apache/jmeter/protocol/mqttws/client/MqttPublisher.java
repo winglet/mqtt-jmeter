@@ -56,6 +56,7 @@ import org.apache.commons.codec.binary.Hex;
 
 
 
+
 import io.inventit.dev.mqtt.paho.MqttWebSocketAsyncClient;
 
 public class MqttPublisher extends AbstractJavaSamplerClient implements Serializable, MqttCallback {
@@ -63,6 +64,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	private MqttWebSocketAsyncClient client;
 	public static int numSeq=0;
 	private AtomicInteger total = new AtomicInteger(0);
+	String myname = this.getClass().getName();
 	//private MqttClient client;
 	
 
@@ -79,7 +81,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	}
 
 	public void setupTest(JavaSamplerContext context){
-		System.out.println(">>>> in setupTest");
+		System.out.println(myname + ">>>> in setupTest");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
@@ -140,7 +142,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
-			System.out.println(">>>> Client is not connected - Aborting test");
+			System.out.println(myname + " >>>> Client is not connected - Aborting test");
 			result.setSuccessful(false);
 			return result;
 		}
@@ -152,7 +154,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 			e1.printStackTrace();
 		}
 		result.sampleEnd(); 
-		System.out.println(">>>> ending runTest");
+		System.out.println(myname + ">>>> ending runTest");
 		return result;
 	
 	}
@@ -276,7 +278,7 @@ private void produce(JavaSamplerContext context) throws Exception {
 
 	private void produce(String message, String topic, int aggregate,
 			String qos, String isRetained, String useTimeStamp, String useNumberSeq,String type_value, String format, String charset,String isListTopic,String strategy,String isPerTopic) throws Exception {
-		System.out.println(">>>> Starting publishing: ");
+		System.out.println(myname + ">>>> Starting publishing: ");
 		try {
 			// Quality
 			int quality = 0;
@@ -291,11 +293,14 @@ private void produce(JavaSamplerContext context) throws Exception {
 			boolean retained = false;
 			if ("TRUE".equals(isRetained))
 				retained = true;
+			//TODO send next one to GUI
+			boolean throttle = true;
 			// List topic
 			if("FALSE".equals(isListTopic)){		
 				for (int i = 0; i < aggregate; ++i) {
 					byte[] payload = createPayload(message, useTimeStamp, useNumberSeq, type_value,format, charset);
-					if (quality!=0) {
+					//if (quality!=0) {
+					if (throttle) {
 						Thread.sleep(100);
 					}
 					this.client.publish(topic,payload,quality,retained);

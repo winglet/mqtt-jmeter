@@ -50,8 +50,8 @@ import io.inventit.dev.mqtt.paho.MqttWebSocketAsyncClient;
 public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable, MqttCallback {
 	private static final long serialVersionUID = 1L;
 	private MqttWebSocketAsyncClient client;
-	//private MqttClient client;
-	
+	private List<String> allmessages =  new ArrayList<String>();
+	String myname = this.getClass().getName();
 
 
 	@Override
@@ -66,7 +66,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	}
 
 	public void setupTest(JavaSamplerContext context){
-		System.out.println(">>>> in setupTest");
+		System.out.println(myname + ">>>> in setupTest");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
@@ -135,11 +135,11 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
 	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
-		System.out.println(">>>> in runtest");
+		System.out.println(myname + " >>>> in runtest");
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
-			System.out.println("Client is not connected - Returning false");
+			System.out.println(myname + " >>>> Client is not connected - Returning false");
 			result.setSuccessful(false);
 			return result;
 		}
@@ -165,8 +165,35 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 				e.printStackTrace();
 			}
 		};
-		
 		result.sampleEnd(); 
+		try {
+			StringBuilder allmsgs = new StringBuilder();
+			if ( !allmessages.isEmpty() ) {
+				for (String s : this.allmessages)
+				{
+				  allmsgs.append(s + "\n");
+				}
+				result.setResponseMessage("Received " + allmessages.size() + " messages: \n" + allmsgs.toString() );
+				result.setResponseData(allmsgs.toString(),null);
+			} else {
+				result.setResponseMessage("No messages received");
+			}
+			if (Integer.parseInt(context.getParameter("AGGREGATE")) == allmessages.size() )
+			  result.setResponseCode("OK");
+			else
+			  result.setResponseCode("FAILED");
+		} catch (Exception e) {
+			result.sampleEnd(); // stop stopwatch
+			result.setSuccessful(false);
+			result.setResponseMessage("Exception: " + e);
+			// get stack trace as a String to return as document data
+			java.io.StringWriter stringWriter = new java.io.StringWriter();
+			e.printStackTrace( new java.io.PrintWriter(stringWriter) );
+			result.setResponseData(stringWriter.toString(), null);
+			result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
+			result.setResponseCode("FAILED");
+		}
+	
 		System.out.println("ending runTest");
 		return result;
 	}
@@ -205,6 +232,6 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	public void messageArrived(String str, MqttMessage msg) throws Exception {
 		System.out.println("got message: " + new String(msg.getPayload()));
 		// TODO Auto-generated method stub
-		
+		allmessages.add(new String(msg.getPayload()));
 	}
 }
