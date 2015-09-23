@@ -151,16 +151,6 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		while ( total.get() < Integer.parseInt(context.getParameter("AGGREGATE")) ) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		};
-		
 		result.sampleEnd(); 
 		System.out.println("ending runTest");
 		return result;
