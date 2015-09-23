@@ -21,18 +21,24 @@
 */
 
 package org.apache.jmeter.protocol.mqttws.client;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
+import org.apache.jmeter.protocol.mqttws.control.gui.MQTTPublisherGui;
 import org.apache.jmeter.protocol.mqttws.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.threads.JMeterContext;
@@ -44,12 +50,19 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.BinaryCodec;
+import org.apache.commons.codec.binary.Hex;
+
+
 
 import io.inventit.dev.mqtt.paho.MqttWebSocketAsyncClient;
 
 public class MqttPublisher extends AbstractJavaSamplerClient implements Serializable, MqttCallback {
 	private static final long serialVersionUID = 1L;
 	private MqttWebSocketAsyncClient client;
+	public static int numSeq=0;
+	private AtomicInteger total = new AtomicInteger(0);
 	//private MqttClient client;
 	
 
@@ -66,7 +79,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	}
 
 	public void setupTest(JavaSamplerContext context){
-		System.out.println("mpika setupTestttttt");
+		System.out.println(">>>> in setupTest");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
@@ -119,59 +132,27 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 		}
 		
 		client.setCallback(this);
-		/*new MqttCallback() {
-
-		    @Override
-		    public void messageArrived(String topic, MqttMessage message)
-		            throws Exception {
-		    	System.out.println("hohohohohohohohohohoh");
-		    }
-
-		    @Override
-		    public void deliveryComplete(IMqttDeliveryToken token) {
-		    }
-
-		    @Override
-		    public void connectionLost(Throwable cause) {
-		    }
-		  });
-		  */
 	}
 
 	
-	private class EndTask extends TimerTask  {
-		boolean timeup = false;
-	    public void run()  {
-	      System.out.println("Time's up!");
-	      timeup = true;
-	      }
-	    public boolean isTimeUp(){
-	    	return timeup;
-	    }
-	 }
-
 	public SampleResult runTest(JavaSamplerContext context) {
 		
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
+			System.out.println("Client is not connected - Aborting test");
 			result.setSuccessful(false);
 			return result;
 		}
 		result.sampleStart(); // start stopwatch
 		try {
-			client.subscribe(context.getParameter("TOPIC"), 0);
-		} catch (MqttException e) {
-			System.out.println("ohohohoh");
+			produce(context);
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
-		EndTask endtask = new EndTask();
-		Timer timer = new Timer();
-		System.out.println("Waiting for: " + Long.parseLong(context.getParameter("TIMEOUT")));
-		timer.schedule( endtask, Long.parseLong(context.getParameter("TIMEOUT")));
-		//wait out for messages till TIMEOUT expires
-		while ( !endtask.isTimeUp() ) {
+		
+		while ( total.get() < Integer.parseInt(context.getParameter("AGGREGATE")) ) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -222,4 +203,178 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 		// TODO Auto-generated method stub
 		
 	}
+	
+	
+private void produce(JavaSamplerContext context) throws Exception {
+		
+		// ---------------------Type of message -------------------//
+
+		if ("FIXED".equals(context.getParameter("TYPE_MESSAGE"))) {
+			System.out.println("Fixed - TODO");
+			/*
+			produce(context.getParameter("MESSAGE"),
+					context.getParameter("TOPIC"),
+					Integer.parseInt(context.getParameter("AGGREGATE")),
+					context.getParameter("QOS"),
+					context.getParameter("RETAINED"),
+					context.getParameter("TIME_STAMP"),
+					context.getParameter("NUMBER_SEQUENCE"),					
+					context.getParameter("TYPE_VALUE"),
+					context.getParameter("FORMAT"),
+					context.getParameter("CHARSET"),
+					context.getParameter("LIST_TOPIC"),
+					context.getParameter("STRATEGY"),
+					context.getParameter("PER_TOPIC"));
+*/
+		} else if ("RANDOM".equals(context.getParameter("TYPE_MESSAGE"))) {
+
+			System.out.println("Randomly - TODO");
+			/*produceRandomly(context.getParameter("SEED"),context.getParameter("MIN_RANDOM_VALUE"),
+					context.getParameter("MAX_RANDOM_VALUE"),context.getParameter("TYPE_RANDOM_VALUE"),
+					context.getParameter("TOPIC"),Integer.parseInt(context.getParameter("AGGREGATE")),
+					context.getParameter("QOS"),context.getParameter("RETAINED"),
+					context.getParameter("TIME_STAMP"),context.getParameter("NUMBER_SEQUENCE"),
+					context.getParameter("TYPE_VALUE"),
+					context.getParameter("FORMAT"),
+					context.getParameter("CHARSET"),
+					context.getParameter("LIST_TOPIC"),
+					context.getParameter("STRATEGY"),
+					context.getParameter("PER_TOPIC"));
+					*/
+									
+		} else if ("TEXT".equals(context.getParameter("TYPE_MESSAGE"))) {
+			produce(context.getParameter("MESSAGE"),
+					context.getParameter("TOPIC"),
+					Integer.parseInt(context.getParameter("AGGREGATE")),
+					context.getParameter("QOS"),
+					context.getParameter("RETAINED"),
+					context.getParameter("TIME_STAMP"),
+					context.getParameter("NUMBER_SEQUENCE"),					
+					context.getParameter("TYPE_VALUE"),
+					context.getParameter("FORMAT"),
+					context.getParameter("CHARSET"),
+					//context.getParameter("LIST_TOPIC"),
+					"FALSE",
+					context.getParameter("STRATEGY"),
+					context.getParameter("PER_TOPIC"));
+		} else if("BYTE_ARRAY".equals(context.getParameter("TYPE_MESSAGE"))){
+			System.out.println("Byte Array - TODO");
+			/*
+			produceBigVolume(
+					context.getParameter("TOPIC"),
+					Integer.parseInt(context.getParameter("AGGREGATE")),
+					context.getParameter("QOS"),
+					context.getParameter("RETAINED"),
+					context.getParameter("TIME_STAMP"),
+					context.getParameter("NUMBER_SEQUENCE"),					
+					context.getParameter("FORMAT"),
+					context.getParameter("CHARSET"),
+					context.getParameter("SIZE_ARRAY"),
+					context.getParameter("LIST_TOPIC"),
+					context.getParameter("STRATEGY"),
+					context.getParameter("PER_TOPIC"));			
+					*/
+		}
+
+	}
+
+
+
+	
+
+
+
+	private void produce(String message, String topic, int aggregate,
+			String qos, String isRetained, String useTimeStamp, String useNumberSeq,String type_value, String format, String charset,String isListTopic,String strategy,String isPerTopic) throws Exception {
+		System.out.println(">>>> Starting publishing: ");
+		try {
+			// Quality
+			int quality = 0;
+			if (MQTTPublisherGui.EXACTLY_ONCE.equals(qos)) {
+				quality = 0;
+			} else if (MQTTPublisherGui.AT_LEAST_ONCE.equals(qos)) {
+				quality = 1;
+			} else if (MQTTPublisherGui.AT_MOST_ONCE.equals(qos)) {
+				quality = 2;
+			}
+			// Retained
+			boolean retained = false;
+			if ("TRUE".equals(isRetained))
+				retained = true;
+			// List topic
+			if("FALSE".equals(isListTopic)){		
+				for (int i = 0; i < aggregate; ++i) {
+					byte[] payload = createPayload(message, useTimeStamp, useNumberSeq, type_value,format, charset);
+					if (quality!=0) {
+						Thread.sleep(100);
+					}
+					this.client.publish(topic,payload,quality,retained);
+					System.out.print("*");
+					total.incrementAndGet();
+				}
+				System.out.println("");
+			} 						
+		} catch (Exception e) {
+			e.printStackTrace();
+			getLogger().warn(e.getLocalizedMessage(), e);
+		}
+	}
+	
+	public byte[] createPayload(String message, String useTimeStamp, String useNumSeq ,String type_value, String format, String charset) throws IOException, NumberFormatException {
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		DataOutputStream d = new DataOutputStream(b);
+// flags  	
+    	byte flags=0x00;
+		if("TRUE".equals(useTimeStamp)) flags|=0x80;
+		if("TRUE".equals(useNumSeq)) flags|=0x40;
+		if (MQTTPublisherGui.INT.equals(type_value)) flags|=0x20;
+		if (MQTTPublisherGui.LONG.equals(type_value)) flags|=0x10;
+		if (MQTTPublisherGui.FLOAT.equals(type_value)) flags|=0x08;
+		if (MQTTPublisherGui.DOUBLE.equals(type_value)) flags|=0x04;
+		if (MQTTPublisherGui.STRING.equals(type_value)) flags|=0x02;
+		if(!"TEXT".equals(type_value)){
+			d.writeByte(flags); 
+		}		
+// TimeStamp
+		if("TRUE".equals(useTimeStamp)){
+   		 Date date= new java.util.Date();
+    	 d.writeLong(date.getTime());
+    	                               }
+// Number Sequence
+		if("TRUE".equals(useNumSeq)){
+   	     d.writeInt(numSeq++);   	
+   	    
+  	    }
+// Value				
+  	    if (MQTTPublisherGui.INT.equals(type_value)) {
+  			d.writeInt(Integer.parseInt(message));  			
+  		} else if (MQTTPublisherGui.LONG.equals(type_value)) {
+  			d.writeLong(Long.parseLong(message));  		
+  		} else if (MQTTPublisherGui.DOUBLE.equals(type_value)) {
+  			d.writeDouble(Double.parseDouble(message));  		
+  		} else if (MQTTPublisherGui.FLOAT.equals(type_value)) {
+  			d.writeDouble(Float.parseFloat(message));  			
+  		} else if (MQTTPublisherGui.STRING.equals(type_value)) {
+  			d.write(message.getBytes());  			
+  		} else if ("TEXT".equals(type_value)) {
+  			d.write(message.getBytes());
+  		}   
+  	      
+// Format: Encoding  	   
+  	   if(MQTTPublisherGui.BINARY.equals(format)){
+  		   BinaryCodec encoder= new BinaryCodec();
+  		   return encoder.encode(b.toByteArray());
+  	   } else if(MQTTPublisherGui.BASE64.equals(format)){
+  		   return Base64.encodeBase64(b.toByteArray());
+  	   } else if(MQTTPublisherGui.BINHEX.equals(format)){
+  		   Hex encoder= new Hex();
+  		   return encoder.encode(b.toByteArray());
+  	   } else if(MQTTPublisherGui.PLAIN_TEXT.equals(format)){  		  
+  		   String s= new String (b.toByteArray(),charset);
+  		   return s.getBytes();
+  		   
+  	   } else return b.toByteArray();
+	}
+       
+
 }
