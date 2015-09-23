@@ -20,7 +20,7 @@
 
 */
 
-package org.apache.jmeter.protocol.mqtt.client;
+package org.apache.jmeter.protocol.mqttws.client;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Random;
@@ -33,7 +33,7 @@ import java.util.TimerTask;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
+import org.apache.jmeter.protocol.mqttws.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.threads.JMeterContext;
 import org.apache.jmeter.threads.JMeterContextService;

@@ -26,7 +26,7 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <org.apache.jmeter.protocol.mqtt.sampler.PublisherSampler guiclass="org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui" testclass="org.apache.jmeter.protocol.mqtt.sampler.PublisherSampler" testname="MQTT Publisher" enabled="true">
+        <org.apache.jmeter.protocol.mqttws.sampler.PublisherSampler guiclass="org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui" testclass="org.apache.jmeter.protocol.mqtt.sampler.PublisherSampler" testname="MQTT Publisher" enabled="true">
           <stringProp name="mqtt.provider_url">__URL__</stringProp>
           <stringProp name="mqtt.topic">__TOPIC__</stringProp>
           <stringProp name="mqtt.security_principle"></stringProp>
@@ -52,7 +52,7 @@
           <stringProp name="mqtt.size_array"></stringProp>
           <stringProp name="mqtt.strategy">mqtt_round_robin</stringProp>
           <boolProp name="mqtt.one_connection_per_topic">false</boolProp>
-        </org.apache.jmeter.protocol.mqtt.sampler.PublisherSampler>
+        </org.apache.jmeter.protocol.mqttws.sampler.PublisherSampler>
         <hashTree/>
       </hashTree>
     </hashTree>

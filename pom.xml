@@ -26,11 +26,11 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>winglet.jmeter.mqtt</groupId>
-	<artifactId>mqtt-ws-jmeter</artifactId>
+	<groupId>winglet.jmeter.mqttws</groupId>
+	<artifactId>mqttws-jmeter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Apache JMeter :: MQTT Sampler</name>
-	<description>MQTT Sampler for Apache JMeter</description>
+	<name>Apache JMeter :: MQTT WS Sampler</name>
+	<description>MQTT Sampler with WebSockets support for Apache JMeter </description>
 
 	<properties>
 		<jmeter-version>2.10</jmeter-version>

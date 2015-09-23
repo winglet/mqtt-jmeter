@@ -20,12 +20,12 @@
 
 */
 
-package org.apache.jmeter.protocol.mqtt.control.gui;
+package org.apache.jmeter.protocol.mqttws.control.gui;
 import org.apache.jmeter.gui.util.JLabeledRadioI18N;
 import org.apache.jmeter.gui.util.JSyntaxTextArea;
 import org.apache.jmeter.gui.util.JTextScrollPane;
 import org.apache.jmeter.gui.util.VerticalPanel;
-import org.apache.jmeter.protocol.mqtt.sampler.PublisherSampler;
+import org.apache.jmeter.protocol.mqttws.sampler.PublisherSampler;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.util.JMeterUtils;
@@ -35,6 +35,7 @@ import org.apache.jorphan.gui.JLabeledTextField;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

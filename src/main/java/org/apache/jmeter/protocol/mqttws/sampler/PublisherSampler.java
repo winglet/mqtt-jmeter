@@ -20,14 +20,15 @@
 
  */
 
-package org.apache.jmeter.protocol.mqtt.sampler;
+package org.apache.jmeter.protocol.mqttws.sampler;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.client.MqttPublisher;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui;
+import org.apache.jmeter.protocol.mqttws.client.MqttPublisher;
+import org.apache.jmeter.protocol.mqttws.control.gui.MQTTPublisherGui;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jmeter.testelement.ThreadListener;

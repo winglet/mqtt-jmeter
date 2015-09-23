@@ -20,7 +20,7 @@
 
 */
 
-package org.apache.jmeter.protocol.mqtt.sampler;
+package org.apache.jmeter.protocol.mqttws.sampler;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;

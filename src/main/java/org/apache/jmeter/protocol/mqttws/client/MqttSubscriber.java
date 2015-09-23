@@ -20,7 +20,7 @@
 
 */
 
-package org.apache.jmeter.protocol.mqtt.client;
+package org.apache.jmeter.protocol.mqttws.client;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Random;
@@ -33,7 +33,7 @@ import java.util.TimerTask;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
+import org.apache.jmeter.protocol.mqttws.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.threads.JMeterContext;
 import org.apache.jmeter.threads.JMeterContextService;
@@ -136,6 +136,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		    }
 		  });
 		  */
+		System.out.println("vgaino setupTestttttt");
 	}
 
 	
@@ -150,16 +151,19 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	    }
 	 }
 
+	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
-		
+		System.out.println("mpaino runtestttttttttttttttttt");
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
+			System.out.println("Client is not connected - Returning false");
 			result.setSuccessful(false);
 			return result;
 		}
 		result.sampleStart(); // start stopwatch
 		try {
+			System.out.println("Subscribing to topic: " + context.getParameter("TOPIC"));
 			client.subscribe(context.getParameter("TOPIC"), 0);
 		} catch (MqttException e) {
 			System.out.println("ohohohoh");

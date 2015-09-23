@@ -20,7 +20,7 @@
 
 */
 
-package org.apache.jmeter.protocol.mqtt.control.gui;
+package org.apache.jmeter.protocol.mqttws.control.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,7 +35,7 @@ import javax.swing.event.ChangeListener;
 
 import org.apache.jmeter.gui.util.JLabeledRadioI18N;
 import org.apache.jmeter.gui.util.VerticalPanel;
-import org.apache.jmeter.protocol.mqtt.sampler.SubscriberSampler;
+import org.apache.jmeter.protocol.mqttws.sampler.SubscriberSampler;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.util.JMeterUtils;
