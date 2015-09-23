@@ -140,7 +140,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
-			System.out.println("Client is not connected - Aborting test");
+			System.out.println(">>>> Client is not connected - Aborting test");
 			result.setSuccessful(false);
 			return result;
 		}
@@ -152,14 +152,14 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 			e1.printStackTrace();
 		}
 		result.sampleEnd(); 
-		System.out.println("ending runTest");
+		System.out.println(">>>> ending runTest");
 		return result;
 	
 	}
 
 
 	public void close(JavaSamplerContext context) {
-		System.out.println("mpika close");
+		
 		
 	}
 	

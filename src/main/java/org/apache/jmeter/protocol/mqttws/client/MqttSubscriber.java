@@ -66,7 +66,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	}
 
 	public void setupTest(JavaSamplerContext context){
-		System.out.println("mpika setupTestttttt");
+		System.out.println(">>>> in setupTest");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
@@ -119,24 +119,6 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		}
 		
 		client.setCallback(this);
-		/*new MqttCallback() {
-
-		    @Override
-		    public void messageArrived(String topic, MqttMessage message)
-		            throws Exception {
-		    	System.out.println("hohohohohohohohohohoh");
-		    }
-
-		    @Override
-		    public void deliveryComplete(IMqttDeliveryToken token) {
-		    }
-
-		    @Override
-		    public void connectionLost(Throwable cause) {
-		    }
-		  });
-		  */
-		System.out.println("vgaino setupTestttttt");
 	}
 
 	
@@ -153,7 +135,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
 	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
-		System.out.println("mpaino runtestttttttttttttttttt");
+		System.out.println(">>>> in runtest");
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
@@ -187,12 +169,11 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		result.sampleEnd(); 
 		System.out.println("ending runTest");
 		return result;
-	
 	}
 
 
 	public void close(JavaSamplerContext context) {
-		System.out.println("mpika close");
+		
 		
 	}
 	
