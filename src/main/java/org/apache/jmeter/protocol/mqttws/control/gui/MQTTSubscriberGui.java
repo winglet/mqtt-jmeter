@@ -71,6 +71,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
     private final JLabeledTextField clientId = new JLabeledTextField(JMeterUtils.getResString("mqtt_client_id")); //$NON-NLS-1$
     private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N("mqtt_qos", QTYPES_ITEMS,AT_MOST_ONCE); //$NON-NLS-1$
     private final JCheckBox cleanSession = new JCheckBox(JMeterUtils.getResString("mqtt_clean_session"), false); // $NON-NLS-1$
+    private final JLabeledTextField iterations = new JLabeledTextField(	JMeterUtils.getResString("mqtt_itertions")); //$NON-NLS-1$
+    
     public MQTTSubscriberGui() {
         init();
     }
@@ -106,6 +108,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
         sampler.setPassword(mqttPwd.getText());
         sampler.setUseAuth(useAuth.isSelected());
         sampler.setTimeout(timeout.getText());
+        sampler.setIterations(iterations.getText());
         sampler.setRandomSuffix(this.suffixClientId.isSelected());
         sampler.setLength(this.suffixLength.getText());
         sampler.setOneConnectionPerTopic(this.connectionPerTopic.isSelected());
@@ -137,9 +140,11 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
 		JPanel TPanel = new VerticalPanel();
 		TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
 		timeout.setLayout(new BoxLayout(timeout, BoxLayout.X_AXIS));
+		iterations.setLayout(new BoxLayout(iterations, BoxLayout.X_AXIS));
 		typeQoSValue.setLayout(new BoxLayout(typeQoSValue, BoxLayout.X_AXIS));
 		TPanel.add(typeQoSValue);
 		TPanel.add(timeout);
+		TPanel.add(iterations);
 		TPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),"Option"));
 		mainPanel.add(TPanel);
 		useAuth.addChangeListener(this);
@@ -175,7 +180,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
         useAuth.setSelected(sampler.isUseAuth());
         mqttUser.setEnabled(useAuth.isSelected());
         mqttPwd.setEnabled(useAuth.isSelected());
-        timeout.setText(sampler.getTimeout());       
+        timeout.setText(sampler.getTimeout());  
+        iterations.setText(sampler.getIterations());
     }
 
     @Override
@@ -187,6 +193,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
         mqttUser.setText(""); // $NON-NLS-1$
         mqttPwd.setText(""); // $NON-NLS-1$
         timeout.setText(""); // $NON-NLS-1$
+        iterations.setText("1");// $NON-NLS-1$
         separator.setText(""); // $NON-NLS-1$
         useAuth.setSelected(false);
         mqttUser.setEnabled(false);

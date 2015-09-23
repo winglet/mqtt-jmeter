@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -51,6 +52,11 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	private static final long serialVersionUID = 1L;
 	private MqttWebSocketAsyncClient client;
 	private List<String> allmessages =  new ArrayList<String>();
+	private AtomicInteger nummsgs = new AtomicInteger(0);
+	
+	static long msgs_aggregate = Long.MAX_VALUE;
+	static long timeout = 10000;
+	
 	String myname = this.getClass().getName();
 
 
@@ -80,6 +86,24 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		/*
+		//wait out for messages till TIMEOUT expires or aggregate msgs count if set 
+		if (!context.getParameter("AGGREGATE").trim().equals("")) {
+			try {
+				msgs_aggregate = Long.parseLong(context.getParameter("AGGREGATE"));
+			} catch (NumberFormatException e) {
+				msgs_aggregate = Long.MAX_VALUE;
+			}
+		}
+		*/
+		if ( !context.getParameter("AGGREGATE").equals("")) {
+			msgs_aggregate = Long.parseLong(context.getParameter("AGGREGATE"));	
+		}
+		if ( !context.getParameter("TIMEOUT").equals("") ) {
+			timeout = Long.parseLong(context.getParameter("TIMEOUT"));
+		}
+		
+		System.out.println("nummsgs: " + msgs_aggregate + " - timeout: " + timeout);
 		
 		MqttConnectOptions options = new MqttConnectOptions();
 		options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
@@ -154,10 +178,8 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		}
 		EndTask endtask = new EndTask();
 		Timer timer = new Timer();
-		System.out.println("Waiting for: " + Long.parseLong(context.getParameter("TIMEOUT")));
-		timer.schedule( endtask, Long.parseLong(context.getParameter("TIMEOUT")));
-		//wait out for messages till TIMEOUT expires
-		while ( !endtask.isTimeUp() ) {
+		timer.schedule( endtask, timeout);
+		while ( !endtask.isTimeUp() && nummsgs.get()<msgs_aggregate ) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -165,6 +187,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 				e.printStackTrace();
 			}
 		};
+		System.out.println(">>>> Stopping listening. Heard " + nummsgs.get() + " so far");
 		result.sampleEnd(); 
 		try {
 			StringBuilder allmsgs = new StringBuilder();
@@ -177,11 +200,20 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 				result.setResponseData(allmsgs.toString(),null);
 			} else {
 				result.setResponseMessage("No messages received");
+				result.setResponseCode("FAILED");
 			}
-			if (Integer.parseInt(context.getParameter("AGGREGATE")) == allmessages.size() )
-			  result.setResponseCode("OK");
-			else
-			  result.setResponseCode("FAILED");
+			if ( msgs_aggregate != Long.MAX_VALUE) {
+				if ( nummsgs.get() >= msgs_aggregate ) {
+					System.out.println("OKKKKKKKKKKKKKKKKKKKKKKK");
+					result.setResponseCode("OK");
+				}
+				else
+					result.setResponseCode("FAILED");
+			} else {
+				if (nummsgs.get()!=0) {
+					result.setResponseCode("OK");
+				}
+			}
 		} catch (Exception e) {
 			result.sampleEnd(); // stop stopwatch
 			result.setSuccessful(false);
@@ -230,6 +262,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
 	@Override
 	public void messageArrived(String str, MqttMessage msg) throws Exception {
+		nummsgs.incrementAndGet();
 		System.out.println("got message: " + new String(msg.getPayload()));
 		// TODO Auto-generated method stub
 		allmessages.add(new String(msg.getPayload()));
