@@ -22,9 +22,7 @@
 
 package org.apache.jmeter.protocol.mqttws.client;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.ArrayList;
@@ -34,10 +32,7 @@ import java.util.TimerTask;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqttws.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.samplers.SampleResult;
-import org.apache.jmeter.threads.JMeterContext;
-import org.apache.jmeter.threads.JMeterContextService;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -57,6 +52,9 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	static long msgs_aggregate = Long.MAX_VALUE;
 	static long timeout = 10000;
 	
+	static String host ;
+	static String clientId ;
+	
 	String myname = this.getClass().getName();
 
 
@@ -72,9 +70,14 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 	}
 
 	public void setupTest(JavaSamplerContext context){
-		System.out.println(myname + ">>>> in setupTest");
-		String host = context.getParameter("HOST");
-		String clientId = context.getParameter("CLIENT_ID");
+		//do nothing yet
+	}
+	
+	public void delayedSetup(JavaSamplerContext context){
+		//System.out.println(myname + ">>>> in setupTest");
+		host = context.getParameter("HOST");
+		clientId = context.getParameter("CLIENT_ID");
+		
 		if("TRUE".equalsIgnoreCase(context.getParameter("RANDOM_SUFFIX"))){
 			clientId= MqttPublisher.getClientId(clientId,Integer.parseInt(context.getParameter("SUFFIX_LENGTH")));	
 		}
@@ -143,6 +146,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		}
 		
 		client.setCallback(this);
+
 	}
 
 	
@@ -159,7 +163,8 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
 	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
-		System.out.println(myname + " >>>> in runtest");
+		delayedSetup(context);
+		//System.out.println(myname + " >>>> in runtest");
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
@@ -187,7 +192,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 				e.printStackTrace();
 			}
 		};
-		System.out.println(">>>> Stopping listening. Heard " + nummsgs.get() + " so far");
+		//System.out.println(">>>> Stopping listening. Heard " + nummsgs.get() + " so far");
 		result.sampleEnd(); 
 		try {
 			StringBuilder allmsgs = new StringBuilder();

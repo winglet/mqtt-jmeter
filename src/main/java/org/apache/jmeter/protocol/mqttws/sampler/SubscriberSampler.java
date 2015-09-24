@@ -174,7 +174,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 
 	@Override
 	public void testEnded() {
-		System.out.println("Hello testended");
 		log.debug("Thread ended " + new Date());
 		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
 		if (this.subscriber != null) {
@@ -223,6 +222,35 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 				log.warn(e.getLocalizedMessage(), e);
 			}
 		}
+		subscriber.setupTest(context);
+	}
+
+	@Override
+	public void threadFinished() {
+		log.debug("Thread ended " + new Date());
+		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
+		if (this.subscriber != null) {
+			try {
+				this.subscriber.close(context);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.warn(e.getLocalizedMessage(), e);
+			}
+		}
+	}
+
+	@Override
+	public SampleResult sample() {
+		//get context just prior to our actual sampling
+		//so that we won't miss any updates by other samplers 
+		//made prior to that point 
+		context = getSamplerContext();
+		return this.subscriber.runTest(context);
+	}
+
+	//get sampler's JMeter context 
+	public JavaSamplerContext getSamplerContext() {
 		String host = getProviderUrl();
 		String list_topic = getDestination();
 		String aggregate = "" + getIterationCount();
@@ -271,31 +299,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 		} else {
 			parameters.addArgument("RANDOM_SUFFIX", "FALSE");
 		}
-		context = new JavaSamplerContext(parameters);
-		subscriber.setupTest(context);
+		return new JavaSamplerContext(parameters);
 	}
-
-	@Override
-	public void threadFinished() {
-
-		log.debug("Thread ended " + new Date());
-		//System.out.println("Received " + ListenerforSubscribe.count.get() +" messages");
-		if (this.subscriber != null) {
-			try {
-				this.subscriber.close(context);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-				log.warn(e.getLocalizedMessage(), e);
-			}
-
-		}
-	}
-
-	@Override
-	public SampleResult sample() {
-
-		return this.subscriber.runTest(context);
-	}
-
 }
