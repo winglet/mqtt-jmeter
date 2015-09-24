@@ -63,9 +63,9 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	private static final long serialVersionUID = 1L;
 	private MqttWebSocketAsyncClient client;
 	public static int numSeq=0;
+	public int quality = 0;
 	private AtomicInteger total = new AtomicInteger(0);
 	String myname = this.getClass().getName();
-	//private MqttClient client;
 	
 
 
@@ -90,7 +90,6 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 		try {
 			System.out.println("Host: " + host + "clientID: " + clientId);
 			client = new MqttWebSocketAsyncClient(host, clientId, new MemoryPersistence());
-			//client = new MqttClient(host, clientId, new MemoryPersistence());
 		} catch (MqttException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -281,7 +280,6 @@ private void produce(JavaSamplerContext context) throws Exception {
 		System.out.println(myname + ">>>> Starting publishing: ");
 		try {
 			// Quality
-			int quality = 0;
 			if (MQTTPublisherGui.EXACTLY_ONCE.equals(qos)) {
 				quality = 0;
 			} else if (MQTTPublisherGui.AT_LEAST_ONCE.equals(qos)) {

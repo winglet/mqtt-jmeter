@@ -204,14 +204,13 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 			}
 			if ( msgs_aggregate != Long.MAX_VALUE) {
 				if ( nummsgs.get() >= msgs_aggregate ) {
-					System.out.println("OKKKKKKKKKKKKKKKKKKKKKKK");
-					result.setResponseCode("OK");
+					result.setResponseOK();
 				}
 				else
 					result.setResponseCode("FAILED");
 			} else {
 				if (nummsgs.get()!=0) {
-					result.setResponseCode("OK");
+					result.setResponseOK();
 				}
 			}
 		} catch (Exception e) {
