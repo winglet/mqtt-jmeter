@@ -1,26 +1,26 @@
-mqtt-jmeter
+mqttws-jmeter
 ===========
 
-This is the plugin for Jmeter to Test MQTT protocol
+Jmeter MQTT sampler with support for websockets 
 
-Tuan Hiep
-ERODS Team
-LIG- Grenoble-France
+Initially a fork of https://github.com/tuanhiep/mqtt-jmeter by
+Tuan Hiep, ERODS Team, LIG- Grenoble-France
 
 
 # Introduction
 
-The MQTT Plugin in Jmeter is used for the injection testing of MQTT server. It permits the complete
-test correspond many scenarios, which depend on type of messages, type of connections. Thanks to it's
-interface graphic, the fact of testing mqtt protocol is taken easily.
+The MQTTWS Plugin in Jmeter is used for the injection testing of MQTT brokers. 
+It uses a paho based client that supports MQTT over tcp and websockets.
 
 
 # How to install MQTT plugin in Jmeter
 
-From the repository: https://github.com/tuanhiep/mqtt-jmeter  
+From the repository: https://github.com/winglet/mqtt-jmeter  
 Get the source code, go to mqtt-jemeter folder and and use the command maven in terminal (Ubuntu):
 
 	mvn clean install package
+
+You also need to build (TODO)
 
 to obtain the file **mqtt-jmeter.jar** in **mqtt-jemeter/target**.  
 Put the **mqtt-jemeter.jar** in the folder **lib/ext** of Jmeter
