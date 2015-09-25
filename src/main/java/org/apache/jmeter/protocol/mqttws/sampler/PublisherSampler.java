@@ -365,6 +365,7 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 		String list_topic = getDestination();
 		String aggregate = "" + getIterationCount();
 		Arguments parameters = new Arguments();
+		parameters.addArgument("SAMPLER_NAME", this.getName());
 		parameters.addArgument("HOST", host);
 		// ------------------------ClientId-----------------------------------//
 		parameters.addArgument("CLIENT_ID", getCLIENT_ID());

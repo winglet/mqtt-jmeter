@@ -166,6 +166,8 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 		delayedSetup(context);
 		//System.out.println(myname + " >>>> in runtest");
 		SampleResult result = new SampleResult();
+		result.setSampleLabel(context.getParameter("SAMPLER_NAME"));
+		
 		
 		if (!client.isConnected() ) {
 			System.out.println(myname + " >>>> Client is not connected - Returning false");

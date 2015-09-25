@@ -143,6 +143,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	public SampleResult runTest(JavaSamplerContext context) {
 		delayedSetupTest(context);
 		SampleResult result = new SampleResult();
+		result.setSampleLabel(context.getParameter("SAMPLER_NAME"));
 		
 		if (!client.isConnected() ) {
 			System.out.println(myname + " >>>> Client is not connected - Aborting test");

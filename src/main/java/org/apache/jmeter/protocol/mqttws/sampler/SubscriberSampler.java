@@ -257,6 +257,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 		String clientId = getClientId();
 		String timeout = this.getTimeout();
 		Arguments parameters = new Arguments();
+		parameters.addArgument("SAMPLER_NAME", this.getName());
 		parameters.addArgument("HOST", host);
 		parameters.addArgument("CLIENT_ID", clientId);
 		parameters.addArgument("TOPIC", list_topic);
