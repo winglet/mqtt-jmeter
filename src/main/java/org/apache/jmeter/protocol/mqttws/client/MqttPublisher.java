@@ -81,6 +81,10 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 	}
 
 	public void setupTest(JavaSamplerContext context){
+		//nothing yet
+	}
+	
+	public void delayedSetupTest(JavaSamplerContext context){
 		System.out.println(myname + ">>>> in setupTest");
 		String host = context.getParameter("HOST");
 		String clientId = context.getParameter("CLIENT_ID");
@@ -137,7 +141,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 
 	
 	public SampleResult runTest(JavaSamplerContext context) {
-		
+		delayedSetupTest(context);
 		SampleResult result = new SampleResult();
 		
 		if (!client.isConnected() ) {
