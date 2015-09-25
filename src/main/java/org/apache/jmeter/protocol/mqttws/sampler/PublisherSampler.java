@@ -314,6 +314,53 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 			}
 		}
 
+		this.producer.setupTest(this.context);
+	}
+
+	@Override
+	public void threadFinished() {
+		log.debug("Thread ended " + new Date());
+				
+		if (producer != null) {
+
+			
+		}
+
+	}
+
+	// -------------------------Sample------------------------------------//
+
+	@Override
+	public SampleResult sample() {
+		//get context just prior to our actual sampling
+		//so that we won't miss any updates by other samplers 
+		//made prior to that point 
+		context = getSamplerContext();
+		return this.producer.runTest(context);
+	}
+
+	@Override
+	public void testEnded() {
+		log.debug("Thread ended " + new Date());
+		if (producer != null) {
+		}
+	}
+
+	@Override
+	public void testEnded(String arg0) {
+		testEnded();
+	}
+
+	@Override
+	public void testStarted() {			
+	}
+
+	@Override
+	public void testStarted(String arg0) {
+		testStarted();
+	}
+	
+	public JavaSamplerContext getSamplerContext() {
 		String host = getProviderUrl();
 		String list_topic = getDestination();
 		String aggregate = "" + getIterationCount();
@@ -416,58 +463,7 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 			parameters.addArgument("RANDOM_SUFFIX","FALSE");
 		}
 		
-		this.context = new JavaSamplerContext(parameters);
-		this.producer.setupTest(this.context);
-	}
-
-	@Override
-	public void threadFinished() {
-		log.debug("Thread ended " + new Date());
-				
-		if (producer != null) {
-
-			
-		}
-
-	}
-
-	// -------------------------Sample------------------------------------//
-
-	@Override
-	public SampleResult sample() {
-
-		return this.producer.runTest(context);
-	}
-
-	@Override
-	public void testEnded() {
-		log.debug("Thread ended " + new Date());
-		
-		
-		if (producer != null) {
-
-			
-
-		}
-
-		
-	}
-
-	@Override
-	public void testEnded(String arg0) {
-		testEnded();
-		
-	}
-
-	@Override
-	public void testStarted() {
-				
-	}
-
-	@Override
-	public void testStarted(String arg0) {
-		testStarted();
-		
+		return new JavaSamplerContext(parameters);
 	}
 
 }
