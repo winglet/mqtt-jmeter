@@ -148,8 +148,8 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
 		DPanel.setLayout(new BoxLayout(DPanel, BoxLayout.X_AXIS));
 		DPanel.add(urlField);
 		DPanel.add(clientId);
-		DPanel.add(suffixClientId);
-		DPanel.add(suffixLength);
+		//DPanel.add(suffixClientId);
+		//DPanel.add(suffixLength);
 		JPanel ControlPanel = new VerticalPanel();
 		ControlPanel.add(DPanel);
 		ControlPanel.add(createDestinationPane());
@@ -310,7 +310,9 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
         sampler.setSIZE_ARRAY(this.sizeArray.getText());
         sampler.setSTRATEGY(this.topicChoice.getText());
         sampler.setOneConnectionPerTopic(this.connectionPerTopic.isSelected());
-        sampler.setRandomSuffix(this.suffixClientId.isSelected());
+        //we might need this in future
+        //sampler.setRandomSuffix(this.suffixClientId.isSelected());
+        sampler.setRandomSuffix(false);
         sampler.setLength(this.suffixLength.getText());
 	}
 		
