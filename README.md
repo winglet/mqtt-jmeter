@@ -1,3 +1,7 @@
+fork continued as a project on its own at https://github.com/winglet/mqttws-jmeter
+===========
+
+
 mqttws-jmeter
 ===========
 
