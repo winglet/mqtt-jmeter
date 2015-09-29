@@ -157,6 +157,11 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		//consider it a success if client gets connected
+		//in future we might add more criteria for this
+		if (client.isConnected() ) {
+			result.setResponseOK();
+		}
 		result.sampleEnd(); 
 		System.out.println(myname + ">>>> ending runTest");
 		return result;
